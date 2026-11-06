@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v15", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v16", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -549,12 +549,14 @@ async function baseOrigem(resolucao, ano) {
   const nomeVirtual = await garantirParquetResolucao(resolucao);
   const condicao = condicaoSQLArea();
   if (condicao) await garantirUfLookup();
+  // o filtro de ano fica no WHERE do nível externo: é ele que "abre" a
+  // cláusula WHERE para o `AND ...` de condicaoSQLArea() encadear
   const origem = `
     FROM (
-      SELECT h3_address, F001 AS n_firmas, T001 AS qt_vinc_ativos
+      SELECT h3_address, year, F001 AS n_firmas, T001 AS qt_vinc_ativos
       FROM read_parquet('${nomeVirtual}')
-      WHERE year = ${ano}
     ) a
+    WHERE a.year = ${ano}
     ${condicao}
   `;
   return { origem, condicao };
@@ -582,7 +584,7 @@ async function aplicarAtributos(resolucao, ano, tokenRequisicao) {
 }
 
 async function calcularBreaks(resolucao, tokenRequisicao) {
-  const { origem, condicao } = await baseOrigem(resolucao, anoAtivo);
+  const { origem } = await baseOrigem(resolucao, anoAtivo);
 
   if (metodoAtivo === "quantis") {
     const probs = Array.from({ length: numClassesAtivo - 1 }, (_, i) => (i + 1) / numClassesAtivo);
@@ -603,19 +605,8 @@ async function calcularBreaks(resolucao, tokenRequisicao) {
     return Array.from({ length: numClassesAtivo + 1 }, (_, i) => Number(mn) + passo * i);
   }
 
-  // jenks — precisa dos valores brutos no JS. Reconstrói a origem com
-  // um WHERE (em vez do AND que vem pronto em `condicao`) para filtrar
-  // nulos antes de ordenar
-  const nomeVirtual = await garantirParquetResolucao(resolucao);
-  const origemJenks = `
-    FROM (
-      SELECT h3_address, F001 AS n_firmas, T001 AS qt_vinc_ativos
-      FROM read_parquet('${nomeVirtual}')
-      WHERE year = ${anoAtivo}
-    ) a
-    WHERE (${expressaoAtiva}) IS NOT NULL ${condicao}
-  `;
-  const r = await conn.query(`SELECT (${expressaoAtiva}) AS v ${origemJenks} ORDER BY v`);
+  // jenks — precisa dos valores brutos no JS (só filtra nulos a mais)
+  const r = await conn.query(`SELECT (${expressaoAtiva}) AS v ${origem} AND (${expressaoAtiva}) IS NOT NULL ORDER BY v`);
   if (tokenRequisicao !== requisicaoAtual) return null;
   const valores = r.toArray().map(row => Number(row.v));
   return jenksBreaks(valores, numClassesAtivo);
