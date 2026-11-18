@@ -1,15 +1,22 @@
 *.parquet
 *.csv
 *.xlsx
-*.pmtiles
-*.pmtiles_*
 .Rproj.user
 .Rhistory
 .RData
 .httr-oauth
 .DS_Store
 .quarto
-# Arquivos e pastas de tiles do MapLibre / PMTiles
-dados/tiles/
 dados/parquet/
 dados/*parquet/
+
+# Saidas do pipeline _targets.R: pmtiles pequenos (<100MB) sao versionados
+# normalmente; os >100MB nao cabem no git (limite do GitHub) e sao
+# distribuidos via GitHub Releases em vez disso -- ver README.
+!dados/tiles/uf_lookup.parquet
+!outputs_dados/hex.pmtiles
+dados/tiles/hex.pmtiles
+dados/tiles/hex.pmtiles_br
+dados/tiles/geometria.pmtiles
+dados/tiles/turbinas_temp.json
+outputs_dados/hex.pmtiles_br
