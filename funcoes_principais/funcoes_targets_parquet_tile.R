@@ -100,15 +100,19 @@ gerar_pmtiles <- function(geometrias_nomeadas, caminho_saida) {
 # 4. Gera os parquets de atributos (resolução x ano) e o lookup de UF
 # ----------------------------------------------------------------------
 
-#' Agrega n_firmas/qt_vinc_ativos por hexágono, para UMA combinação
-#' resolução x ano. O "ano" não vira coluna no arquivo final — vira
-#' parte do nome do arquivo (ver exportar_atributos_parquet()).
-preparar_atributos <- function(df, resolucao, ano_alvo) {
+#' Agrega as colunas de atributo (ex.: n_firmas/qt_vinc_ativos) por
+#' hexágono, para UMA combinação resolução x ano. `colunas_atributos`
+#' vem de fora (target) em vez de hardcoded aqui, para que novas
+#' variáveis do parquet de entrada da RAIS sejam incluídas só ajustando
+#' esse vetor, sem tocar nesta função. O "ano" não vira coluna no
+#' arquivo final — vira parte do nome do arquivo (ver
+#' exportar_atributos_parquet()).
+preparar_atributos <- function(df, resolucao, ano_alvo, colunas_atributos) {
   df |>
     dplyr::filter(h3_res == resolucao, ano == ano_alvo) |>
     dplyr::group_by(h3_address) |>
     dplyr::summarise(
-      dplyr::across(c(n_firmas, qt_vinc_ativos), ~ sum(.x, na.rm = TRUE)),
+      dplyr::across(dplyr::all_of(colunas_atributos), ~ sum(.x, na.rm = TRUE)),
       .groups = "drop"
     )
 }
@@ -117,10 +121,10 @@ preparar_atributos <- function(df, resolucao, ano_alvo) {
 #' dados/hex_rXX_ANO.parquet. Retorna o caminho do arquivo — é esse
 #' retorno que o target usa com format = "file" para rastrear se o
 #' arquivo mudou entre execuções.
-exportar_atributos_parquet <- function(df, resolucao, ano_alvo, diretorio_saida = "dados") {
+exportar_atributos_parquet <- function(df, resolucao, ano_alvo, colunas_atributos, diretorio_saida = "dados") {
   if (!dir.exists(diretorio_saida)) dir.create(diretorio_saida, recursive = TRUE)
-  
-  atributos <- preparar_atributos(df, resolucao, ano_alvo)
+
+  atributos <- preparar_atributos(df, resolucao, ano_alvo, colunas_atributos)
   
   if (nrow(atributos) == 0) {
     warning(sprintf("Resolução %d, ano %d: 0 linhas — nada para exportar.", resolucao, ano_alvo))
