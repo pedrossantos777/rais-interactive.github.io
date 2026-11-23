@@ -209,7 +209,7 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v16", "background: #2190
 // o resto do código nunca referencia nomes de arquivo "soltos".
 //
 // ARQUIVOS REMOTOS USADOS (todos em R2_BASE, raiz do bucket):
-//   1) geometria_targets.pmtiles   → forma dos hexágonos (1 arquivo só,
+//   1) geometria_cens.pmtiles      → forma dos hexágonos (1 arquivo só,
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
 //   2) uf_lookup.parquet           → tabela h3_address → uf, usada só
 //      quando um filtro de Região/UF está ativo. URL: UF_LOOKUP_URL.
@@ -222,7 +222,7 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v16", "background: #2190
 //      logo abaixo de RESOLUCOES. O filtro de ano é feito em SQL
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
 const R2_BASE = "https://pub-a1447fee74634ed59f47ce2ba90a1fbd.r2.dev";
-const PMTILES_URL = `${R2_BASE}/geometria_targets.pmtiles`; // arquivo (1)
+const PMTILES_URL = "https://s3-publico.ipea.gov.br/h3br/geometria_cens.pmtiles"; // arquivo (1)
 const DATA_BASE = R2_BASE; // arquivos na raiz do bucket
 const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
