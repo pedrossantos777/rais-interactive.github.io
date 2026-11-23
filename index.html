@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v16", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v17", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -213,9 +213,9 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v16", "background: #2190
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
 //   2) uf_lookup.parquet           → tabela h3_address → uf, usada só
 //      quando um filtro de Região/UF está ativo. URL: UF_LOOKUP_URL.
-//   3) hex_res4_cens4.parquet,
-//      hex_res6_cens4.parquet,
-//      hex_res8_cens4.parquet      → um arquivo POR RESOLUÇÃO (4/6/8),
+//   3) hex_res5_cens4.parquet,
+//      hex_res7_cens4.parquet,
+//      hex_res9_cens4.parquet      → um arquivo POR RESOLUÇÃO (5/7/9),
 //      cada um com TODOS os anos juntos dentro da coluna "year" e as
 //      colunas de valor "F001" (firmas) e "T001" (vínculos ativos).
 //      O nome de cada um é montado pela função nomeArquivoRemoto(),
@@ -236,9 +236,9 @@ const ANOS = [2013, 2023];
 const ANO_INICIAL = 2023;
 
 const RESOLUCOES = [
-  { res: 4, minzoom: 0,  maxzoom: 7  },
-  { res: 6, minzoom: 7,  maxzoom: 10 },
-  { res: 8, minzoom: 10, maxzoom: 14 }
+  { res: 5, minzoom: 0,  maxzoom: 7  },
+  { res: 7, minzoom: 7,  maxzoom: 10 },
+  { res: 9, minzoom: 10, maxzoom: 14 }
 ];
 
 const PALETAS = {
@@ -348,8 +348,8 @@ function layerId(res) { return `fill-h3-r${String(res).padStart(2, "0")}`; }
 function sourceLayerId(res) { return `h3_r${String(res).padStart(2, "0")}`; }
 
 // >>> É AQUI que o nome dos arquivos de atributo (item 3 da CONFIGURAÇÃO
-// lá em cima) é montado: hex_res4_cens4.parquet, hex_res6_cens4.parquet,
-// hex_res8_cens4.parquet — um arquivo por resolução, sem ano no nome (os
+// lá em cima) é montado: hex_res5_cens4.parquet, hex_res7_cens4.parquet,
+// hex_res9_cens4.parquet — um arquivo por resolução, sem ano no nome (os
 // anos vêm todos juntos dentro do parquet, na coluna "year"). Se o nome
 // desses arquivos mudar no bucket, troque só aqui. <<<
 function nomeArquivoRemoto(resolucao) { return `hex_res${resolucao}_cens4.parquet`; }
@@ -448,7 +448,7 @@ let opacidadeAtiva = 0.85;
 let estadoAtivo = "todos";
 let regiaoAtiva = "todas";
 let requisicaoAtual = 0;
-let breaksPorResolucao = {}; // { 4: [min,...,max], 6: [...], 8: [...] } — cada resolução tem sua própria escala
+let breaksPorResolucao = {}; // { 5: [min,...,max], 7: [...], 9: [...] } — cada resolução tem sua própria escala
 
 // filtro de área via subquery de existência (não JOIN) — evita duplicar
 // hexágonos que intersectam mais de uma UF. Retorna fragmentos
@@ -693,7 +693,7 @@ function adicionarCamadasHex() {
   map.addSource("hex", {
     type: "vector",
     url: "pmtiles://" + PMTILES_URL,
-    promoteId: { h3_r04: "h3_address", h3_r06: "h3_address", h3_r08: "h3_address" }
+    promoteId: { h3_r05: "h3_address", h3_r07: "h3_address", h3_r09: "h3_address" }
   });
 
   RESOLUCOES.forEach(info => {
