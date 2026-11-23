@@ -199,41 +199,41 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-res-cens4-v17", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-ipea-v18", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
 // ==================================================================
-// Tudo que este dashboard busca no Cloudflare R2 é definido aqui. Se um
+// Tudo que este dashboard busca no servidor é definido aqui. Se um
 // arquivo for renomeado/substituído no bucket, é só mexer nesta seção —
 // o resto do código nunca referencia nomes de arquivo "soltos".
 //
-// ARQUIVOS REMOTOS USADOS (todos em R2_BASE, raiz do bucket):
+// ARQUIVOS REMOTOS USADOS (todos em BASE_URL):
 //   1) geometria_cens.pmtiles      → forma dos hexágonos (1 arquivo só,
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
-//   2) uf_lookup.parquet           → tabela h3_address → uf, usada só
+//   2) uf_lookup_cens.parquet         → tabela h3_address → uf, usada só
 //      quando um filtro de Região/UF está ativo. URL: UF_LOOKUP_URL.
-//   3) hex_res5_cens4.parquet,
-//      hex_res7_cens4.parquet,
-//      hex_res9_cens4.parquet      → um arquivo POR RESOLUÇÃO (5/7/9),
-//      cada um com TODOS os anos juntos dentro da coluna "year" e as
-//      colunas de valor "F001" (firmas) e "T001" (vínculos ativos).
+//   3) hex_r05_cens.parquet,
+//      hex_r07_cens.parquet,
+//      hex_r09_cens.parquet      → um arquivo POR RESOLUÇÃO (5/7/9),
+//      cada um com TODOS os anos juntos dentro da coluna "ano" e as
+//      colunas de valor "n_firmas" (firmas) e "qt_vinc_ativos" (vínculos ativos).
 //      O nome de cada um é montado pela função nomeArquivoRemoto(),
 //      logo abaixo de RESOLUCOES. O filtro de ano é feito em SQL
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
-const R2_BASE = "https://pub-a1447fee74634ed59f47ce2ba90a1fbd.r2.dev";
-const PMTILES_URL = "https://s3-publico.ipea.gov.br/h3br/geometria_cens.pmtiles"; // arquivo (1)
-const DATA_BASE = R2_BASE; // arquivos na raiz do bucket
-const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup.parquet`; // arquivo (2) — nome remoto
+const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // pasta onde estão TODOS os arquivos
+const PMTILES_URL = `${BASE_URL}/geometria_cens.pmtiles`; // arquivo (1)
+const DATA_BASE = BASE_URL;
+const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup_cens.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
 
 // anos disponíveis no seletor "Ano" — PRECISA bater com os anos que
-// realmente existem dentro da coluna "year" dos arquivos hex_resX_cens4.parquet
+// realmente existem dentro da coluna "ano" dos arquivos hex_rXX_cens.parquet
 // (arquivo 3 acima). Isso aqui só alimenta o <select>; quem filtra de
 // fato é o WHERE year = ... montado em baseOrigem(). Se os arquivos
 // ganharem mais anos, adicione aqui também.
-const ANOS = [2013, 2023];
-const ANO_INICIAL = 2023;
+const ANOS = [2019];
+const ANO_INICIAL = 2019;
 
 const RESOLUCOES = [
   { res: 5, minzoom: 0,  maxzoom: 7  },
@@ -348,12 +348,12 @@ function layerId(res) { return `fill-h3-r${String(res).padStart(2, "0")}`; }
 function sourceLayerId(res) { return `h3_r${String(res).padStart(2, "0")}`; }
 
 // >>> É AQUI que o nome dos arquivos de atributo (item 3 da CONFIGURAÇÃO
-// lá em cima) é montado: hex_res5_cens4.parquet, hex_res7_cens4.parquet,
-// hex_res9_cens4.parquet — um arquivo por resolução, sem ano no nome (os
-// anos vêm todos juntos dentro do parquet, na coluna "year"). Se o nome
+// lá em cima) é montado: hex_r05_cens.parquet, hex_r07_cens.parquet,
+// hex_r09_cens.parquet — um arquivo por resolução, sem ano no nome (os
+// anos vêm todos juntos dentro do parquet, na coluna "ano"). Se o nome
 // desses arquivos mudar no bucket, troque só aqui. <<<
-function nomeArquivoRemoto(resolucao) { return `hex_res${resolucao}_cens4.parquet`; }
-function nomeVirtualParquet(resolucao) { return `hex_res${resolucao}_cens4.parquet`; }
+function nomeArquivoRemoto(resolucao) { return `hex_r${String(resolucao).padStart(2, "0")}_cens.parquet`; }
+function nomeVirtualParquet(resolucao) { return `hex_r${String(resolucao).padStart(2, "0")}_cens.parquet`; }
 
 function setStatus(msg, tipo) {
   const el = document.getElementById("status");
@@ -553,7 +553,7 @@ async function baseOrigem(resolucao, ano) {
   // cláusula WHERE para o `AND ...` de condicaoSQLArea() encadear
   const origem = `
     FROM (
-      SELECT h3_address, year, F001 AS n_firmas, T001 AS qt_vinc_ativos
+      SELECT h3_address, ano AS year, n_firmas, qt_vinc_ativos
       FROM read_parquet('${nomeVirtual}')
     ) a
     WHERE a.year = ${ano}
