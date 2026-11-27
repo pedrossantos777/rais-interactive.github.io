@@ -47,26 +47,13 @@ caminho_atributos_2019_cens_parquet_cf7586f26e3b9a73|branch|c028a4c3e862ac5b|034
 caminho_atributos_2019_cens_parquet|pattern|c5941efc72a7ec1b|03450ace63fe7350||-1065641617||||1825045|file|local|vector||caminho_atributos_2019_cens_parquet_64c1826377eaad09*caminho_atributos_2019_cens_parquet_fc77f3f2e4ba8a0b*caminho_atributos_2019_cens_parquet_cf7586f26e3b9a73|1.313||
 caminho_pmtiles_2019_cens|stem|eaa70c87d057bae8|c8c6df0019de0161|5289e1d0a321a402|2003244117|outputs_dados/geometria_2019_cens.pmtiles|t20775.8627934527s|s103088264b|103088264|file|local|vector|||30.719||
 janelas_zoom_rais|stem|0c8a5745269d1a8d|062437eda0fdcb0a|2c530c1562a7fbd1|1051126516||t20775.899329533s|s159b|159|rds|local|vector|||0.781|package 'sf' was built under R version 4.5.3. package 'freestiler' was built under R version 4.5.3|
-janelas_zoom_cens|stem|cb0334bc665609ae|04d7f08f66b6daf2|2c530c1562a7fbd1|-1728826552||t20775.8993305907s|s159b|159|rds|local|vector|||0||
-arquivo_cens_prep_tile|stem|1b4e1018fd352eb0|42a711b60b64f744|2c530c1562a7fbd1|-520140543|outputs_dados/df_uni_cens_prep_tile.parquet|t20775.8992380967s|s1294180b|1294180|file|local|vector|||0||
 resolucoes_rais|stem|62f5b7f779792751|2659a64dbb9488e3|2c530c1562a7fbd1|-632620778||t20775.8993321741s|s57b|57|rds|local|vector||resolucoes_rais_195dadb6d6a0c78f*resolucoes_rais_0daafb990c5993f9*resolucoes_rais_cc74994856042732|0||
-colunas_atributos_cens|stem|801c45d00c889133|8bbc134df5e260b2|2c530c1562a7fbd1|1451209312||t20775.8993328267s|s78b|78|rds|local|vector|||0||
-resolucoes_cens|stem|e3268c6ed789775f|88c7901cc1cd1f7f|2c530c1562a7fbd1|1041888702||t20775.899333651s|s57b|57|rds|local|vector||resolucoes_cens_c386c7b04396aaec*resolucoes_cens_4c06678fced12882*resolucoes_cens_befd3de8c7957969|0||
 colunas_atributos_rais|stem|801c45d00c889133|8bbc134df5e260b2|2c530c1562a7fbd1|37047925||t20775.8993342348s|s78b|78|rds|local|vector|||0||
 arquivo_rais_bruto|stem|1a6b5426acc3c63e|ea03c36c4f6070eb|2c530c1562a7fbd1|-891525778|dados/rais_test_20260727.parquet|t20661.9046263437s|s5807483b|5807483|file|local|vector|||0||
-arquivo_cens|stem|fe2aa2974d3fbe8d|84d7cf6be8826ff6|2c530c1562a7fbd1|1408247636|outputs_dados/df_uni_cens.parquet|t20775.899232968s|s2068317b|2068317|file|local|vector|||0||
-df_cens_prep_tile|stem|f0d3447f208d296e|e876ddae5afd4efd|81fbc2a38f1e299a|-1713038916||t20775.8993379037s|s690355b|690355|rds|local|vector|||0.078||
 df_rais|stem|61044353d0831deb|8ce4e01e6616407b|f5b2c32ed9695b93|639338427||t20775.8994824885s|s4382982b|4382982|rds|local|vector|||7.25||
-df_cens|stem|0f7a92e63005fc78|43d3ec19370ac216|eabd49543a22705e|1837744779||t20775.8994929125s|s1433954b|1433954|rds|local|vector|||0.031||
-caminho_pmtiles_cens|stem|2e68edbd636be9bc|51fe9e2622682916|194dd00cff597d22|8553899|outputs_dados/geometria_cens.pmtiles|t20775.8998524775s|s34997308b|34997308|file|local|vector|||28.078||
 caminho_pmtiles|stem|904e5678df5ed2f4|806f110996bda5f7|bd8391d0d30335c2|1492149635|geometria.pmtiles|t20775.9000867286s|s30863768b|30863768|file|local|vector|||18.64||
 anos_rais|stem|b97e9069d8ea2a04|63d670830e82c250|167848ced7c3bb2d|1887465733||t20775.9001011567s|s105b|105|rds|local|vector||anos_rais_db80aad4ff4ed880*anos_rais_eb70d4cf2ff78de2|0.016||
 caminho_uf_lookup|stem|1184dea7f333e167|638eb3eb418e6092|592c58b8c3f9bcc1|402656745|uf_lookup.parquet|t20775.9001257687s|s710849b|710849|file|local|vector|||0.531||
-caminho_hex_cens_8df057ca2b6c0276|branch|76316040cc3bbfda|788f999caeb321dc|030d8f959aa94169|-1642856666|outputs_dados/hex_r05_cens.parquet|t20775.9001280732s|s107344b|107344|file|local|vector|caminho_hex_cens||0.015||
-caminho_hex_cens_62d06f8759aa16cb|branch|1831f70b56bfd766|788f999caeb321dc|030d8f959aa94169|1519323795|outputs_dados/hex_r07_cens.parquet|t20775.9001299808s|s337406b|337406|file|local|vector|caminho_hex_cens||0.015||
-caminho_hex_cens_6ccc5ea697283df1|branch|b997dcb60766e3b2|788f999caeb321dc|030d8f959aa94169|1202974130|outputs_dados/hex_r09_cens.parquet|t20775.9001329s|s1411916b|1411916|file|local|vector|caminho_hex_cens||0.078||
-caminho_hex_cens|pattern|72db4cb333ddcbe9|788f999caeb321dc||-2077774827||||1856666|file|local|vector||caminho_hex_cens_8df057ca2b6c0276*caminho_hex_cens_62d06f8759aa16cb*caminho_hex_cens_6ccc5ea697283df1|0.108||
-caminho_uf_lookup_cens|stem|e8fda4cafb1c8cbc|7b780cd034c18263|6591fc4a24cf5f86|-1732475701|outputs_dados/uf_lookup_cens.parquet|t20775.9001401049s|s1187106b|1187106|file|local|vector|||0.437||
 caminho_atributos_parquet_77044e9c95a21c9a|branch|9c718fcf8140f1b0|7bdba1350a0fed91|410233605fba8eae|501330166|dados/hex_r04_2013.parquet|t20775.9001607783s|s35540b|35540|file|local|vector|caminho_atributos_parquet||0.031||
 caminho_atributos_parquet_4d957936ef0e875f|branch|f2012eed14432e08|7bdba1350a0fed91|410233605fba8eae|1452829907|dados/hex_r04_2023.parquet|t20775.900174517s|s36581b|36581|file|local|vector|caminho_atributos_parquet||0.031||
 caminho_atributos_parquet_327a3ff0a82d1f79|branch|8334d4b40726a9c5|7bdba1350a0fed91|410233605fba8eae|-1543386589|dados/hex_r06_2013.parquet|t20775.9001906113s|s197012b|197012|file|local|vector|caminho_atributos_parquet||0.156||
@@ -74,11 +61,28 @@ caminho_atributos_parquet_407206aa144bb246|branch|f0a3d80defca1d1c|7bdba1350a0fe
 caminho_atributos_parquet_97016cdac52d5c17|branch|2f4e0620733aaf85|7bdba1350a0fed91|410233605fba8eae|1135674397|dados/hex_r08_2013.parquet|t20775.9002340689s|s641604b|641604|file|local|vector|caminho_atributos_parquet||0.468||
 caminho_atributos_parquet_0c2e58478875f37c|branch|32d92c23fb1da077|7bdba1350a0fed91|410233605fba8eae|-1608423678|dados/hex_r08_2023.parquet|t20775.9002576267s|s712311b|712311|file|local|vector|caminho_atributos_parquet||0.891||
 caminho_atributos_parquet|pattern|2ed9c727c414456a|7bdba1350a0fed91||144220374||||1827780|file|local|vector||caminho_atributos_parquet_77044e9c95a21c9a*caminho_atributos_parquet_4d957936ef0e875f*caminho_atributos_parquet_327a3ff0a82d1f79*caminho_atributos_parquet_407206aa144bb246*caminho_atributos_parquet_97016cdac52d5c17*caminho_atributos_parquet_0c2e58478875f37c|1.702||
+arquivo_dicionario_industrias|stem|14c92ff374bab282|18ed907f1f0d23df|2c530c1562a7fbd1|-1699779182|dados/data/dicionario_cnae_industrias.csv|t20784.7432645853s|s6201b|6201|file|local|vector|||0.938|package 'sf' was built under R version 4.5.3. package 'freestiler' was built under R version 4.5.3|
+mapa_industrias_cens|stem|6ed7fd26e796d80a|b84355524c87167a|1bc9e2f19db4706b|101222238||t20784.7454282674s|s290b|290|rds|local|vector|||0.063||
+janelas_zoom_cens|stem|887533201fe01d2d|9a29184c74a89b47|2c530c1562a7fbd1|-1728826552||t20784.7664548026s|s176b|176|rds|local|vector|||2.203|package 'sf' was built under R version 4.5.3. package 'freestiler' was built under R version 4.5.3|
+arquivo_cens_prep_tile|stem|8317622cfaec5414|42a711b60b64f744|2c530c1562a7fbd1|-520140543|outputs_dados/df_uni_cens_prep_tile.parquet|t20784.76628758s|s2138370b|2138370|file|local|vector|||0||
+resolucoes_cens|stem|cc04a0d0558bf545|176b14a1b8bedf0b|2c530c1562a7fbd1|1041888702||t20784.7664564017s|s60b|60|rds|local|vector||resolucoes_cens_1383ef88fd9bbb0e*resolucoes_cens_c386c7b04396aaec*resolucoes_cens_4c06678fced12882*resolucoes_cens_befd3de8c7957969|0||
+arquivo_cens|stem|006edfb553a23aea|84d7cf6be8826ff6|2c530c1562a7fbd1|1408247636|outputs_dados/df_uni_cens.parquet|t20784.7662399314s|s60606999b|60606999|file|local|vector|||0||
+df_cens_prep_tile|stem|72dee292eb61eeb3|e876ddae5afd4efd|7295d64e8f7b712d|-1713038916||t20784.7664619495s|s1237639b|1237639|rds|local|vector|||0.031||
+caminho_pmtiles_cens|stem|453a2c5d9e1d72ab|51fe9e2622682916|c878cfed6e18f845|8553899|outputs_dados/geometria_cens.pmtiles|t20784.7670116338s|s52613420b|52613420|file|local|vector|||47.344||
 carregar_rais|function|c330ce580b17ef77
 gerar_geometria_pmtiles|function|739457ffac1b36e9
 gerar_uf_lookup|function|454014ebae1cff1e
 exportar_hex_cens|function|9c1d346987b1113c
-carregar_cens|function|398f2359e311ce2e
+carregar_cens|function|776dc7a22b465f4a
+mapa_colunas_industria|function|52ae8782481e9b58
 preparar_atributos|function|bcd817ad85a4c8e1
 carregar_cens_prep_tile|function|31a4c8d1da81e294
 exportar_atributos_parquet|function|e2eb755d30547499
+colunas_atributos_cens|stem|623efc873aad9264|8168c05f10974d3c|b67970b02c4caf41|1451209312||t20784.7810745897s|s275b|275|rds|local|vector|||0||
+df_cens|stem|2fd78260947d5640|22fefc0c875cdeb3|f332d699e196ce1c|1837744779||t20784.7811945481s|s51423952b|51423952|rds|local|vector|||0.375||
+caminho_hex_cens_395c476883c85865|branch|01f52e1c133061d5|788f999caeb321dc|9455ea9be891980e|231216217|outputs_dados/hex_r03_cens.parquet|t20784.7812211263s|s297573b|297573|file|local|vector|caminho_hex_cens||0.031||
+caminho_hex_cens_8df057ca2b6c0276|branch|ee9ce8f17a875936|788f999caeb321dc|9455ea9be891980e|-1642856666|outputs_dados/hex_r05_cens.parquet|t20784.7812509606s|s2796752b|2796752|file|local|vector|caminho_hex_cens||0.062||
+caminho_hex_cens_62d06f8759aa16cb|branch|ec398d66c89e4e53|788f999caeb321dc|9455ea9be891980e|1519323795|outputs_dados/hex_r07_cens.parquet|t20784.7812845246s|s8369221b|8369221|file|local|vector|caminho_hex_cens||0.438||
+caminho_hex_cens_6ccc5ea697283df1|branch|5112811f8462bdd9|788f999caeb321dc|9455ea9be891980e|1202974130|outputs_dados/hex_r09_cens.parquet|t20784.7813230805s|s44718179b|44718179|file|local|vector|caminho_hex_cens||1.235||
+caminho_hex_cens|pattern|b762508a6498d368|788f999caeb321dc||-2077774827||||56181725|file|local|vector||caminho_hex_cens_395c476883c85865*caminho_hex_cens_8df057ca2b6c0276*caminho_hex_cens_62d06f8759aa16cb*caminho_hex_cens_6ccc5ea697283df1|1.766||
+caminho_uf_lookup_cens|stem|9bf4a94f88ca3400|7b780cd034c18263|96b5aaf62e828928|-1732475701|outputs_dados/uf_lookup_cens.parquet|t20784.7813890569s|s1908364b|1908364|file|local|vector|||3.719||

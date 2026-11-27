@@ -1,10 +1,14 @@
 library(arrow)
 library(tidyverse)
-df5 <- read_parquet("dados/rais_cens_2019_h3_05.parquet")
-df7 <- read_parquet("dados/rais_cens_2019_h3_07.parquet")
-df9 <- read_parquet("dados/rais_cens_2019_h3_09.parquet")
 
-df_uni_cens <- bind_rows(df5, df7, df9)
+anos <- 2013:2023
+resolucoes <- c(3, 5, 7, 9)
+
+caminhos <- expand_grid(ano = anos, res = resolucoes) |>
+  mutate(caminho = sprintf("dados/data/rais_h3_censurada/rais_cens_%d_h3_%02d.parquet", ano, res)) |>
+  pull(caminho)
+
+df_uni_cens <- map(caminhos, read_parquet) |> bind_rows()
 write_parquet(df_uni_cens, "outputs_dados/df_uni_cens.parquet")
 
 # preparar para o tile (geometria: 1 linha por hexágono, sem atributos)

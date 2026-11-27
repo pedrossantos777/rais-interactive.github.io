@@ -12,14 +12,14 @@
 #   multi-ano, resoluções 4/6/8.
 # Pipeline "cens": parquet já censurado por fora (ver
 #   transformacao_parquets.R, que gera os 2 parquets de entrada abaixo
-#   a partir de dados/rais_cens_2019_h3_0{5,7,9}.parquet), ano único
-#   (2019), resoluções 5/7/9.
+#   a partir de dados/data/rais_h3_censurada/rais_cens_ANO_h3_0{3,5,7,9}.parquet),
+#   multi-ano (2013-2023), resoluções 3/5/7/9.
 # ======================================================================
 
 library(targets)
 
 tar_option_set(
-  packages = c("arrow", "dplyr", "sf", "h3jsr", "purrr", "freestiler")
+  packages = c("arrow", "dplyr", "sf", "h3jsr", "purrr", "freestiler", "readr")
 )
 
 tar_source("funcoes_principais/funcoes_targets_parquet_tile.R")
@@ -85,7 +85,7 @@ list(
   # ),
 
   # ================================================================
-  # Pipeline "cens": RAIS 2019 já censurada, resoluções 5/7/9
+  # Pipeline "cens": RAIS 2013-2023 já censurada, resoluções 3/5/7/9
   # ================================================================
 
   tar_target(
@@ -100,16 +100,32 @@ list(
     format = "file"
   ),
 
+  # dicionário CNAE -> indústria: dá o nome em português (name_pt) de
+  # cada coluna T002..T009 (T001, o total, já é renomeado direto pra
+  # qt_vinc_ativos em carregar_cens())
+  tar_target(
+    arquivo_dicionario_industrias,
+    "dados/data/dicionario_cnae_industrias.csv",
+    format = "file"
+  ),
+
+  tar_target(mapa_industrias_cens, mapa_colunas_industria(arquivo_dicionario_industrias)),
+
   tar_target(df_cens_prep_tile, carregar_cens_prep_tile(arquivo_cens_prep_tile)),
 
-  tar_target(df_cens, carregar_cens(arquivo_cens)),
+  tar_target(df_cens, carregar_cens(arquivo_cens, mapa_industrias_cens)),
 
-  tar_target(resolucoes_cens, c(5, 7, 9)),
+  tar_target(resolucoes_cens, c(3, 5, 7, 9)),
 
-  tar_target(colunas_atributos_cens, c("n_firmas", "qt_vinc_ativos")),
+  # n_firmas/qt_vinc_ativos/renda = F001/T001/R001 renomeados em
+  # carregar_cens(); os demais nomes vêm do dicionário
+  # (mapa_industrias_cens) — 1 coluna por grupo de indústria (T002..T009),
+  # nome em português
+  tar_target(colunas_atributos_cens, c("n_firmas", "qt_vinc_ativos", "renda", names(mapa_industrias_cens))),
 
   tar_target(janelas_zoom_cens, list(
-    h3_r05 = list(resolucao = 5, min_zoom = 0,  max_zoom = 7),
+    h3_r03 = list(resolucao = 3, min_zoom = 0,  max_zoom = 5),
+    h3_r05 = list(resolucao = 5, min_zoom = 5,  max_zoom = 7),
     h3_r07 = list(resolucao = 7, min_zoom = 7,  max_zoom = 10),
     h3_r09 = list(resolucao = 9, min_zoom = 10, max_zoom = 14)
   )),

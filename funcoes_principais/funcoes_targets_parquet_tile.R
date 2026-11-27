@@ -32,13 +32,28 @@ carregar_cens_prep_tile <- function(caminho_parquet) {
   arrow::read_parquet(caminho_parquet)
 }
 
+#' Lê dados/data/dicionario_cnae_industrias.csv e devolve o mapeamento
+#' nome em português (name_pt) -> código da variável (T002..T009), no
+#' formato esperado por dplyr::rename(!!!mapa) — T001 (total) fica de
+#' fora porque já é renomeado para qt_vinc_ativos em carregar_cens().
+mapa_colunas_industria <- function(caminho_dicionario) {
+  dicionario <- readr::read_csv(caminho_dicionario, show_col_types = FALSE) |>
+    dplyr::distinct(variavel_vinculos, name_pt)
+
+  stats::setNames(dicionario$variavel_vinculos, dicionario$name_pt)
+}
+
 #' Lê o parquet de atributos já censurado e renomeia pros nomes que o
-#' resto do pipeline usa (ano, n_firmas, qt_vinc_ativos, uf) — a origem
-#' usa year/F001/T001/abbrev_state (nomenclatura do processo de
-#' censura, ver legado/censura_rapida.R).
-carregar_cens <- function(caminho_parquet) {
+#' resto do pipeline usa (ano, n_firmas, qt_vinc_ativos, renda, uf) — a
+#' origem usa year/F001/T001/R001/abbrev_state (nomenclatura do
+#' processo de censura, ver legado/censura_rapida.R). As colunas de
+#' vínculos por indústria (T002..T009) são renomeadas pro nome em
+#' português do dicionário (`mapa_industria`, ver
+#' mapa_colunas_industria()).
+carregar_cens <- function(caminho_parquet, mapa_industria) {
   arrow::read_parquet(caminho_parquet) |>
-    dplyr::rename(ano = year, n_firmas = F001, qt_vinc_ativos = T001, uf = abbrev_state)
+    dplyr::rename(ano = year, n_firmas = F001, qt_vinc_ativos = T001, renda = R001, uf = abbrev_state) |>
+    dplyr::rename(!!!mapa_industria)
 }
 
 # 2. Geometria -> pmtiles (compartilhada pelos dois pipelines)
