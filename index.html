@@ -150,7 +150,7 @@
 
   <label for="formula-input">Fórmula SQL personalizada (opcional)</label>
   <input type="text" id="formula-input" placeholder="ex.: n_firmas / NULLIF(qt_vinc_ativos, 0)" />
-  <div class="hint">Colunas disponíveis: n_firmas, qt_vinc_ativos. Deixe em branco para usar a variável acima.</div>
+  <div class="hint" id="formula-hint"></div>
   <button id="formula-btn" class="secundario">Aplicar fórmula</button>
 
   <hr />
@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-ipea-v18", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v22", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -208,22 +208,24 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-ipea-v18", "background: #21908d; c
 // arquivo for renomeado/substituído no bucket, é só mexer nesta seção —
 // o resto do código nunca referencia nomes de arquivo "soltos".
 //
-// ARQUIVOS REMOTOS USADOS (todos em BASE_URL):
+// ARQUIVOS REMOTOS USADOS (todos na pasta BASE_URL/rais_setores):
 //   1) geometria_cens.pmtiles      → forma dos hexágonos (1 arquivo só,
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
+//      PRECISA ter as camadas h3_r03, h3_r05, h3_r07 e h3_r09.
 //   2) uf_lookup_cens.parquet         → tabela h3_address → uf, usada só
 //      quando um filtro de Região/UF está ativo. URL: UF_LOOKUP_URL.
-//   3) hex_r05_cens.parquet,
+//   3) hex_r03_cens.parquet,
+//      hex_r05_cens.parquet,
 //      hex_r07_cens.parquet,
-//      hex_r09_cens.parquet      → um arquivo POR RESOLUÇÃO (5/7/9),
+//      hex_r09_cens.parquet      → um arquivo POR RESOLUÇÃO (3/5/7/9),
 //      cada um com TODOS os anos juntos dentro da coluna "ano" e as
-//      colunas de valor "n_firmas" (firmas) e "qt_vinc_ativos" (vínculos ativos).
+//      colunas de valor: n_firmas, qt_vinc_ativos e os 8 setores (ver VARIAVEIS).
 //      O nome de cada um é montado pela função nomeArquivoRemoto(),
 //      logo abaixo de RESOLUCOES. O filtro de ano é feito em SQL
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
-const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // pasta onde estão TODOS os arquivos
-const PMTILES_URL = `${BASE_URL}/geometria_cens.pmtiles`; // arquivo (1)
-const DATA_BASE = BASE_URL;
+const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // raiz; os 6 arquivos ficam na subpasta rais_setores/
+const PMTILES_URL = `${BASE_URL}/rais_setores/geometria_cens.pmtiles`; // arquivo (1)
+const DATA_BASE = `${BASE_URL}/rais_setores`; // pasta dos parquets de atributos e do uf_lookup (ajuste aqui se o caminho mudar)
 const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup_cens.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
 
@@ -232,11 +234,12 @@ const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica regist
 // (arquivo 3 acima). Isso aqui só alimenta o <select>; quem filtra de
 // fato é o WHERE year = ... montado em baseOrigem(). Se os arquivos
 // ganharem mais anos, adicione aqui também.
-const ANOS = [2019];
-const ANO_INICIAL = 2019;
+const ANOS = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023];
+const ANO_INICIAL = 2023;
 
 const RESOLUCOES = [
-  { res: 5, minzoom: 0,  maxzoom: 7  },
+  { res: 3, minzoom: 0,  maxzoom: 5  },
+  { res: 5, minzoom: 5,  maxzoom: 7  },
   { res: 7, minzoom: 7,  maxzoom: 10 },
   { res: 9, minzoom: 10, maxzoom: 14 }
 ];
@@ -256,10 +259,24 @@ const PALETA_INICIAL = "viridis";
 // o app — os parquets novos trazem F001/T001, então o alias é feito na
 // própria consulta SQL (ver baseOrigem()), sem precisar tocar no resto
 // do código (legenda, popup, fórmula, export)
+// >>> VARIÁVEIS DO SELETOR. Chave = apelido curto (é o nome usado nas
+// fórmulas SQL, no popup e no CSV). "coluna" = nome REAL da coluna no
+// parquet (pode ter espaço/acento). Para incluir uma variável nova, é só
+// acrescentar uma linha aqui. <<<
 const VARIAVEIS = {
-  n_firmas: { label: "Quantidade de firmas" },
-  qt_vinc_ativos: { label: "Vínculos ativos (trabalhadores)" }
+  n_firmas:                  { label: "Quantidade de firmas",                     coluna: "n_firmas" },
+  qt_vinc_ativos:            { label: "Vínculos ativos (total)",                  coluna: "qt_vinc_ativos" },
+  renda:                     { label: "Renda",                                    coluna: "renda" },
+  agro_mineracao:            { label: "Vínculos: Agropecuária e Mineração",       coluna: "Agropecuária e Mineração" },
+  industria:                 { label: "Vínculos: Indústria de Transformação",     coluna: "Indústria de Transformação" },
+  construcao_utilidades:     { label: "Vínculos: Construção e Utilidades Públicas", coluna: "Construção e Utilidades Públicas" },
+  comercio:                  { label: "Vínculos: Comércio Atacadista e Varejista", coluna: "Comércio Atacadista e Varejista" },
+  logistica:                 { label: "Vínculos: Logística",                      coluna: "Logística" },
+  servicos_consumidor_lazer: { label: "Vínculos: Serviços ao Consumidor e Lazer", coluna: "Serviços ao Consumidor e Lazer" },
+  servicos_empresariais:     { label: "Vínculos: Serviços Empresariais e de Conhecimento", coluna: "Serviços Empresariais e de Conhecimento" },
+  servicos_publicos_sociais: { label: "Vínculos: Serviços Públicos e Sociais",    coluna: "Serviços Públicos e Sociais" }
 };
+const CHAVES = Object.keys(VARIAVEIS);
 const VARIAVEL_INICIAL = "n_firmas";
 
 const CLASSES_MIN = 4, CLASSES_MAX = 8, CLASSES_INICIAL = 5;
@@ -348,7 +365,7 @@ function layerId(res) { return `fill-h3-r${String(res).padStart(2, "0")}`; }
 function sourceLayerId(res) { return `h3_r${String(res).padStart(2, "0")}`; }
 
 // >>> É AQUI que o nome dos arquivos de atributo (item 3 da CONFIGURAÇÃO
-// lá em cima) é montado: hex_r05_cens.parquet, hex_r07_cens.parquet,
+// lá em cima) é montado: hex_r03_cens.parquet, hex_r05_cens.parquet, hex_r07_cens.parquet,
 // hex_r09_cens.parquet — um arquivo por resolução, sem ano no nome (os
 // anos vêm todos juntos dentro do parquet, na coluna "ano"). Se o nome
 // desses arquivos mudar no bucket, troque só aqui. <<<
@@ -448,7 +465,7 @@ let opacidadeAtiva = 0.85;
 let estadoAtivo = "todos";
 let regiaoAtiva = "todas";
 let requisicaoAtual = 0;
-let breaksPorResolucao = {}; // { 5: [min,...,max], 7: [...], 9: [...] } — cada resolução tem sua própria escala
+let breaksPorResolucao = {}; // { 3: [min,...,max], 5: [...], 7: [...], 9: [...] } — cada resolução tem sua própria escala
 
 // filtro de área via subquery de existência (não JOIN) — evita duplicar
 // hexágonos que intersectam mais de uma UF. Retorna fragmentos
@@ -511,6 +528,7 @@ async function iniciarDuckDB() {
 // é buscado/registrado só uma vez e reaproveitado em toda troca de ano —
 // a mesma estratégia de memoização já usada em garantirUfLookup()
 let parquetsRegistrados = {}; // { [resolucao]: Promise<nomeVirtual> }
+let colunasPorArquivo = {};   // { [nomeVirtual]: Set<colunas> }
 
 function garantirParquetResolucao(resolucao) {
   if (!parquetsRegistrados[resolucao]) {
@@ -521,6 +539,10 @@ function garantirParquetResolucao(resolucao) {
       if (!resp.ok) throw new Error(`HTTP ${resp.status} ao buscar ${url}`);
       const buffer = new Uint8Array(await resp.arrayBuffer());
       await db.registerFileBuffer(nomeVirtual, buffer);
+      // guarda quais colunas o arquivo tem: se alguma variável de VARIAVEIS
+      // não existir nele (ex.: parquet ainda sem "renda"), vira NULL em vez de quebrar
+      const desc = await conn.query(`DESCRIBE SELECT * FROM read_parquet('${nomeVirtual}')`);
+      colunasPorArquivo[nomeVirtual] = new Set(desc.toArray().map(r => r.column_name));
       return nomeVirtual;
     })();
   }
@@ -553,7 +575,7 @@ async function baseOrigem(resolucao, ano) {
   // cláusula WHERE para o `AND ...` de condicaoSQLArea() encadear
   const origem = `
     FROM (
-      SELECT h3_address, ano AS year, n_firmas, qt_vinc_ativos
+      SELECT h3_address, ano AS year, ${CHAVES.map(k => colunasPorArquivo[nomeVirtual].has(VARIAVEIS[k].coluna) ? `"${VARIAVEIS[k].coluna}" AS ${k}` : `CAST(NULL AS DOUBLE) AS ${k}`).join(", ")}
       FROM read_parquet('${nomeVirtual}')
     ) a
     WHERE a.year = ${ano}
@@ -569,7 +591,7 @@ async function aplicarAtributos(resolucao, ano, tokenRequisicao) {
   if (tokenRequisicao !== requisicaoAtual) return;
 
   const result = await conn.query(`
-    SELECT a.h3_address, a.n_firmas, a.qt_vinc_ativos, (${expressaoAtiva}) AS valor
+    SELECT a.h3_address, ${CHAVES.map(k => `a.${k}`).join(", ")}, (${expressaoAtiva}) AS valor
     ${origem}
   `);
   if (tokenRequisicao !== requisicaoAtual) return;
@@ -578,7 +600,7 @@ async function aplicarAtributos(resolucao, ano, tokenRequisicao) {
   for (const row of result.toArray()) {
     map.setFeatureState(
       { source: "hex", sourceLayer, id: row.h3_address },
-      { n_firmas: Number(row.n_firmas), qt_vinc_ativos: Number(row.qt_vinc_ativos), valor: Number(row.valor) }
+      { ...Object.fromEntries(CHAVES.map(k => [k, Number(row[k])])), valor: Number(row.valor) }
     );
   }
 }
@@ -693,7 +715,7 @@ function adicionarCamadasHex() {
   map.addSource("hex", {
     type: "vector",
     url: "pmtiles://" + PMTILES_URL,
-    promoteId: { h3_r05: "h3_address", h3_r07: "h3_address", h3_r09: "h3_address" }
+    promoteId: { h3_r03: "h3_address", h3_r05: "h3_address", h3_r07: "h3_address", h3_r09: "h3_address" }
   });
 
   RESOLUCOES.forEach(info => {
@@ -719,7 +741,7 @@ function adicionarCamadasHex() {
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
         .setHTML(
-          `UF: ${f.properties.uf}<br>Firmas: ${state.n_firmas ?? "—"}<br>Vínculos ativos: ${state.qt_vinc_ativos ?? "—"}<br>Valor exibido: ${state.valor ?? "—"}<br>Ano: ${anoAtivo}`
+          `${CHAVES.map(k => `${VARIAVEIS[k].label}: ${state[k] ?? "—"}`).join("<br>")}<br><b>Valor exibido: ${state.valor ?? "—"}</b><br>Ano: ${anoAtivo}`
         )
         .addTo(map);
     });
@@ -792,12 +814,12 @@ async function exportarCSV() {
   try {
     const { origem } = await baseOrigem(resolucaoExport, anoAtivo);
     const r = await conn.query(`
-      SELECT a.h3_address, a.n_firmas, a.qt_vinc_ativos, (${expressaoAtiva}) AS valor
+      SELECT a.h3_address, ${CHAVES.map(k => `a.${k}`).join(", ")}, (${expressaoAtiva}) AS valor
       ${origem}
     `);
     const linhas = r.toArray();
-    const header = "h3_address,n_firmas,qt_vinc_ativos,valor";
-    const corpo = linhas.map(row => `${row.h3_address},${row.n_firmas},${row.qt_vinc_ativos},${row.valor}`).join("\n");
+    const header = ["h3_address", ...CHAVES, "valor"].join(",");
+    const corpo = linhas.map(row => [row.h3_address, ...CHAVES.map(k => row[k]), row.valor].join(",")).join("\n");
     const blob = new Blob([header + "\n" + corpo], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -826,6 +848,7 @@ selectAno.addEventListener("change", () => {
   carregarAno(anoAtivo);
 });
 
+document.getElementById("formula-hint").textContent = "Colunas disponíveis: " + CHAVES.join(", ") + ". Deixe em branco para usar a variável acima.";
 const selectVariavel = document.getElementById("variavel-select");
 Object.keys(VARIAVEIS).forEach(coluna => {
   const opt = document.createElement("option");
