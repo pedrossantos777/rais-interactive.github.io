@@ -223,7 +223,7 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v19", "background: #21908d
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
 const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // pasta onde estão TODOS os arquivos
 const PMTILES_URL = `${BASE_URL}/geometria_cens.pmtiles`; // arquivo (1)
-const DATA_BASE = BASE_URL; // parquets de atributos e uf_lookup ficam direto em BASE_URL (ajuste aqui se o caminho mudar)
+const DATA_BASE = `${BASE_URL}/rais_setores`; // pasta dos parquets de atributos e do uf_lookup (ajuste aqui se o caminho mudar)
 const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup_cens.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
 
