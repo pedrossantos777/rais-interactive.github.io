@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v20", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v21", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -208,7 +208,7 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v20", "background: #21908d
 // arquivo for renomeado/substituído no bucket, é só mexer nesta seção —
 // o resto do código nunca referencia nomes de arquivo "soltos".
 //
-// ARQUIVOS REMOTOS USADOS (todos em BASE_URL):
+// ARQUIVOS REMOTOS USADOS (todos na pasta BASE_URL/rais_setores):
 //   1) geometria_cens.pmtiles      → forma dos hexágonos (1 arquivo só,
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
 //      PRECISA ter as camadas h3_r03, h3_r05, h3_r07 e h3_r09.
@@ -223,8 +223,8 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v20", "background: #21908d
 //      O nome de cada um é montado pela função nomeArquivoRemoto(),
 //      logo abaixo de RESOLUCOES. O filtro de ano é feito em SQL
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
-const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // pasta onde estão TODOS os arquivos
-const PMTILES_URL = `${BASE_URL}/geometria_cens.pmtiles`; // arquivo (1)
+const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // raiz; os 6 arquivos ficam na subpasta rais_setores/
+const PMTILES_URL = `${BASE_URL}/rais_setores/geometria_cens.pmtiles`; // arquivo (1)
 const DATA_BASE = `${BASE_URL}/rais_setores`; // pasta dos parquets de atributos e do uf_lookup (ajuste aqui se o caminho mudar)
 const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup_cens.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
