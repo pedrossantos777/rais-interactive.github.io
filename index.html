@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v21", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v22", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -266,6 +266,7 @@ const PALETA_INICIAL = "viridis";
 const VARIAVEIS = {
   n_firmas:                  { label: "Quantidade de firmas",                     coluna: "n_firmas" },
   qt_vinc_ativos:            { label: "Vínculos ativos (total)",                  coluna: "qt_vinc_ativos" },
+  renda:                     { label: "Renda",                                    coluna: "renda" },
   agro_mineracao:            { label: "Vínculos: Agropecuária e Mineração",       coluna: "Agropecuária e Mineração" },
   industria:                 { label: "Vínculos: Indústria de Transformação",     coluna: "Indústria de Transformação" },
   construcao_utilidades:     { label: "Vínculos: Construção e Utilidades Públicas", coluna: "Construção e Utilidades Públicas" },
@@ -527,6 +528,7 @@ async function iniciarDuckDB() {
 // é buscado/registrado só uma vez e reaproveitado em toda troca de ano —
 // a mesma estratégia de memoização já usada em garantirUfLookup()
 let parquetsRegistrados = {}; // { [resolucao]: Promise<nomeVirtual> }
+let colunasPorArquivo = {};   // { [nomeVirtual]: Set<colunas> }
 
 function garantirParquetResolucao(resolucao) {
   if (!parquetsRegistrados[resolucao]) {
@@ -537,6 +539,10 @@ function garantirParquetResolucao(resolucao) {
       if (!resp.ok) throw new Error(`HTTP ${resp.status} ao buscar ${url}`);
       const buffer = new Uint8Array(await resp.arrayBuffer());
       await db.registerFileBuffer(nomeVirtual, buffer);
+      // guarda quais colunas o arquivo tem: se alguma variável de VARIAVEIS
+      // não existir nele (ex.: parquet ainda sem "renda"), vira NULL em vez de quebrar
+      const desc = await conn.query(`DESCRIBE SELECT * FROM read_parquet('${nomeVirtual}')`);
+      colunasPorArquivo[nomeVirtual] = new Set(desc.toArray().map(r => r.column_name));
       return nomeVirtual;
     })();
   }
@@ -569,7 +575,7 @@ async function baseOrigem(resolucao, ano) {
   // cláusula WHERE para o `AND ...` de condicaoSQLArea() encadear
   const origem = `
     FROM (
-      SELECT h3_address, ano AS year, ${CHAVES.map(k => `"${VARIAVEIS[k].coluna}" AS ${k}`).join(", ")}
+      SELECT h3_address, ano AS year, ${CHAVES.map(k => colunasPorArquivo[nomeVirtual].has(VARIAVEIS[k].coluna) ? `"${VARIAVEIS[k].coluna}" AS ${k}` : `CAST(NULL AS DOUBLE) AS ${k}`).join(", ")}
       FROM read_parquet('${nomeVirtual}')
     ) a
     WHERE a.year = ${ano}
