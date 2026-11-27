@@ -199,7 +199,7 @@
 <script type="module">
 import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
 
-console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v19", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
+console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v20", "background: #21908d; color: white; padding: 4px 8px; font-weight: bold; font-size: 14px;");
 
 // ==================================================================
 // CONFIGURAÇÃO
@@ -211,11 +211,13 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v19", "background: #21908d
 // ARQUIVOS REMOTOS USADOS (todos em BASE_URL):
 //   1) geometria_cens.pmtiles      → forma dos hexágonos (1 arquivo só,
 //      todas as resoluções e UFs; nunca muda por ano). URL: PMTILES_URL.
+//      PRECISA ter as camadas h3_r03, h3_r05, h3_r07 e h3_r09.
 //   2) uf_lookup_cens.parquet         → tabela h3_address → uf, usada só
 //      quando um filtro de Região/UF está ativo. URL: UF_LOOKUP_URL.
-//   3) hex_r05_cens.parquet,
+//   3) hex_r03_cens.parquet,
+//      hex_r05_cens.parquet,
 //      hex_r07_cens.parquet,
-//      hex_r09_cens.parquet      → um arquivo POR RESOLUÇÃO (5/7/9),
+//      hex_r09_cens.parquet      → um arquivo POR RESOLUÇÃO (3/5/7/9),
 //      cada um com TODOS os anos juntos dentro da coluna "ano" e as
 //      colunas de valor: n_firmas, qt_vinc_ativos e os 8 setores (ver VARIAVEIS).
 //      O nome de cada um é montado pela função nomeArquivoRemoto(),
@@ -223,7 +225,7 @@ console.log("%c[VERSÃO DO ARQUIVO] build-hex-setores-v19", "background: #21908d
 //      (WHERE year = ...), não trocando de arquivo — ver baseOrigem().
 const BASE_URL = "https://s3-publico.ipea.gov.br/h3br"; // pasta onde estão TODOS os arquivos
 const PMTILES_URL = `${BASE_URL}/geometria_cens.pmtiles`; // arquivo (1)
-const DATA_BASE = `${BASE_URL}/rais_setores`; // pasta dos parquets de atributos e do uf_lookup (ajuste aqui se o caminho for outro)
+const DATA_BASE = `${BASE_URL}/rais_setores`; // pasta dos parquets de atributos e do uf_lookup (ajuste aqui se o caminho mudar)
 const UF_LOOKUP_URL = `${DATA_BASE}/uf_lookup_cens.parquet`; // arquivo (2) — nome remoto
 const UF_LOOKUP_VIRTUAL = "uf_lookup_cens4.parquet"; // nome com que fica registrado dentro do DuckDB (pode ser diferente do nome remoto acima)
 
@@ -236,7 +238,8 @@ const ANOS = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023];
 const ANO_INICIAL = 2023;
 
 const RESOLUCOES = [
-  { res: 5, minzoom: 0,  maxzoom: 7  },
+  { res: 3, minzoom: 0,  maxzoom: 5  },
+  { res: 5, minzoom: 5,  maxzoom: 7  },
   { res: 7, minzoom: 7,  maxzoom: 10 },
   { res: 9, minzoom: 10, maxzoom: 14 }
 ];
@@ -361,7 +364,7 @@ function layerId(res) { return `fill-h3-r${String(res).padStart(2, "0")}`; }
 function sourceLayerId(res) { return `h3_r${String(res).padStart(2, "0")}`; }
 
 // >>> É AQUI que o nome dos arquivos de atributo (item 3 da CONFIGURAÇÃO
-// lá em cima) é montado: hex_r05_cens.parquet, hex_r07_cens.parquet,
+// lá em cima) é montado: hex_r03_cens.parquet, hex_r05_cens.parquet, hex_r07_cens.parquet,
 // hex_r09_cens.parquet — um arquivo por resolução, sem ano no nome (os
 // anos vêm todos juntos dentro do parquet, na coluna "ano"). Se o nome
 // desses arquivos mudar no bucket, troque só aqui. <<<
@@ -461,7 +464,7 @@ let opacidadeAtiva = 0.85;
 let estadoAtivo = "todos";
 let regiaoAtiva = "todas";
 let requisicaoAtual = 0;
-let breaksPorResolucao = {}; // { 5: [min,...,max], 7: [...], 9: [...] } — cada resolução tem sua própria escala
+let breaksPorResolucao = {}; // { 3: [min,...,max], 5: [...], 7: [...], 9: [...] } — cada resolução tem sua própria escala
 
 // filtro de área via subquery de existência (não JOIN) — evita duplicar
 // hexágonos que intersectam mais de uma UF. Retorna fragmentos
@@ -706,7 +709,7 @@ function adicionarCamadasHex() {
   map.addSource("hex", {
     type: "vector",
     url: "pmtiles://" + PMTILES_URL,
-    promoteId: { h3_r05: "h3_address", h3_r07: "h3_address", h3_r09: "h3_address" }
+    promoteId: { h3_r03: "h3_address", h3_r05: "h3_address", h3_r07: "h3_address", h3_r09: "h3_address" }
   });
 
   RESOLUCOES.forEach(info => {
